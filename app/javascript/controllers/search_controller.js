@@ -161,6 +161,15 @@ export default class extends Controller {
     card.classList.remove("playing")
   }
 
+  async powerOff() {
+    if (!confirm("Are you sure you want to shut down?")) return
+    await fetch("/system/power_off", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" }
+    })
+    document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;color:#888;font-size:1.2rem">Shutting down...</div>'
+  }
+
   showBrowse() {
     this.browseTarget.classList.remove("hidden")
   }

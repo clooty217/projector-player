@@ -38,5 +38,7 @@ Rails.application.routes.draw do
     post "remove",     to: "bluetooth#remove",     as: :bt_remove
   end
 
+  post "system/power_off", to: "system#power_off", as: :power_off
+
   get "up" => "rails/health#show", as: :rails_health_check
 end

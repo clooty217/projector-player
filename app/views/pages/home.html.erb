@@ -24,9 +24,14 @@
                   data-type="tv">TV Shows</button>
         </div>
       </div>
-      <button data-action="click->bluetooth#open" class="header-icon-btn" title="Bluetooth Speakers">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6.5 6.5 17.5 17.5 12 23 12 1 17.5 6.5 6.5 17.5"/></svg>
-      </button>
+      <div class="header-actions">
+        <button data-action="click->bluetooth#open" class="header-icon-btn" title="Sound & Bluetooth">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6.5 6.5 17.5 17.5 12 23 12 1 17.5 6.5 6.5 17.5"/></svg>
+        </button>
+        <button data-action="click->search#powerOff" class="header-icon-btn header-icon-btn--danger" title="Power Off">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>
+        </button>
+      </div>
     </header>
 
     <main>
@@ -49,6 +54,11 @@
   <!-- ── Remote Control Panel ── -->
   <div data-remote-target="panel" class="remote-panel">
     <div class="remote-inner">
+      <div class="remote-info-row">
+        <span data-remote-target="volumeLevel" class="remote-volume-level"></span>
+        <span data-remote-target="qualityBadge" class="remote-quality-badge"></span>
+      </div>
+
       <p data-remote-target="statusText" class="remote-status">Now Playing</p>
       <h2 data-remote-target="title" class="remote-title">Title</h2>
 
@@ -68,11 +78,6 @@
         <button data-action="click->remote#volumeUp" class="remote-btn" title="Volume Up">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
         </button>
-      </div>
-
-      <div class="remote-info-row">
-        <span data-remote-target="volumeLevel" class="remote-volume-level"></span>
-        <span data-remote-target="qualityBadge" class="remote-quality-badge"></span>
       </div>
 
       <div class="remote-seek">
