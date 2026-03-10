@@ -14,6 +14,11 @@ Rails.application.routes.draw do
   post "player/resume",      to: "player#resume",      as: :resume
   post "player/volume_up",   to: "player#volume_up",   as: :volume_up
   post "player/volume_down", to: "player#volume_down",  as: :volume_down
+  post "player/seek_forward",     to: "player#seek_forward",     as: :seek_forward
+  post "player/seek_backward",    to: "player#seek_backward",    as: :seek_backward
+  post "player/seek_forward_60",  to: "player#seek_forward_60",  as: :seek_forward_60
+  post "player/seek_backward_60", to: "player#seek_backward_60", as: :seek_backward_60
+  post "player/restart",          to: "player#restart",           as: :restart
   post "player/exit",        to: "player#exit_player",  as: :exit_player
   get  "player/status",      to: "player#status",       as: :player_status
 

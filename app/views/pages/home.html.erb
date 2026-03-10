@@ -70,6 +70,36 @@
         </button>
       </div>
 
+      <div class="remote-seek">
+        <button data-action="click->remote#seekBackward" class="remote-btn" title="Rewind 10s">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+          <span class="remote-btn-label">10s</span>
+        </button>
+
+        <button data-action="click->remote#restart" class="remote-btn" title="Restart">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="19 20 9 12 19 4 19 20"/><line x1="5" y1="19" x2="5" y2="5"/></svg>
+        </button>
+
+        <button data-action="click->remote#seekForward" class="remote-btn" title="Forward 10s">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.13-9.36L23 10"/></svg>
+          <span class="remote-btn-label">10s</span>
+        </button>
+      </div>
+
+      <div class="remote-seek">
+        <button data-action="click->remote#seekBackward60" class="remote-btn" title="Rewind 1 min">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+          <span class="remote-btn-label">1m</span>
+        </button>
+
+        <div class="remote-seek-spacer"></div>
+
+        <button data-action="click->remote#seekForward60" class="remote-btn" title="Forward 1 min">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.13-9.36L23 10"/></svg>
+          <span class="remote-btn-label">1m</span>
+        </button>
+      </div>
+
       <button data-action="click->remote#exit" class="remote-exit">
         Exit &amp; Return to Browse
       </button>

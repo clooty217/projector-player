@@ -53,6 +53,26 @@ export default class extends Controller {
     await this.postJSON("/player/volume_down")
   }
 
+  async seekForward() {
+    await this.postJSON("/player/seek_forward")
+  }
+
+  async seekBackward() {
+    await this.postJSON("/player/seek_backward")
+  }
+
+  async seekForward60() {
+    await this.postJSON("/player/seek_forward_60")
+  }
+
+  async seekBackward60() {
+    await this.postJSON("/player/seek_backward_60")
+  }
+
+  async restart() {
+    await this.postJSON("/player/restart")
+  }
+
   async exit() {
     this.statusTextTarget.textContent = "Stopping..."
     await this.postJSON("/player/exit")

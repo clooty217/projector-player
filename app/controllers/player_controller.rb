@@ -59,6 +59,30 @@ class PlayerController < ApplicationController
     render json: { status: "error", message: e.message }, status: :service_unavailable
   end
 
+  def seek_forward
+    seek(10)
+  end
+
+  def seek_backward
+    seek(-10)
+  end
+
+  def seek_forward_60
+    seek(60)
+  end
+
+  def seek_backward_60
+    seek(-60)
+  end
+
+  def restart
+    cdp = CdpClient.new(port: CDP_PORT)
+    result = cdp.evaluate("(() => { const v = document.querySelector('video'); if(v) { v.currentTime = 0; return v.currentTime; } })()")
+    render json: { status: "ok", result: result }
+  rescue CdpClient::Error => e
+    render json: { status: "error", message: e.message }, status: :service_unavailable
+  end
+
   def exit_player
     pid = self.class.current_pid
     if pid
@@ -87,6 +111,14 @@ class PlayerController < ApplicationController
   end
 
   private
+
+  def seek(seconds)
+    cdp = CdpClient.new(port: CDP_PORT)
+    result = cdp.evaluate("(() => { const v = document.querySelector('video'); if(v) { v.currentTime = Math.min(v.duration, Math.max(0, v.currentTime + (#{seconds}))); return v.currentTime; } })()")
+    render json: { status: "ok", result: result }
+  rescue CdpClient::Error => e
+    render json: { status: "error", message: e.message }, status: :service_unavailable
+  end
 
   def build_vidking_url(tmdb_id, media_type, season, episode)
     base = if media_type == "tv" && season.present? && episode.present?
