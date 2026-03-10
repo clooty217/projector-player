@@ -1,7 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["modal", "list", "scanBtn", "scanStatus"]
+  static targets = ["modal", "list", "sinkList", "scanBtn", "scanStatus"]
 
   connect() {
     this.scanning = false
@@ -9,6 +9,7 @@ export default class extends Controller {
 
   open() {
     this.modalTarget.classList.add("visible")
+    this.loadSinks()
     this.loadDevices()
   }
 
@@ -19,6 +20,57 @@ export default class extends Controller {
   closeOnBackdrop(event) {
     if (event.target === this.modalTarget) this.close()
   }
+
+  // ── Audio Sinks ──
+
+  async loadSinks() {
+    this.sinkListTarget.innerHTML = '<p class="loading">Loading audio outputs...</p>'
+    const sinks = await this.getJSON("/audio/sinks")
+    this.renderSinks(sinks)
+  }
+
+  async setSink(event) {
+    const btn = event.currentTarget
+    const sinkName = btn.dataset.sink
+    btn.disabled = true
+    btn.textContent = "Switching..."
+
+    const result = await this.postJSON("/audio/set_sink", { sink: sinkName })
+    if (result.success) {
+      this.loadSinks()
+    } else {
+      btn.textContent = "Failed"
+      setTimeout(() => { btn.textContent = "Select"; btn.disabled = false }, 2000)
+    }
+  }
+
+  renderSinks(sinks) {
+    if (!sinks || sinks.length === 0) {
+      this.sinkListTarget.innerHTML = '<p class="no-results">No audio outputs found.</p>'
+      return
+    }
+
+    this.sinkListTarget.innerHTML = sinks.map(s => {
+      const activeClass = s.default ? "bt-connected" : ""
+      const statusLabel = s.default ? "Active" : s.state
+      const actionBtn = s.default
+        ? `<button class="bt-action bt-action--disconnect" disabled>Active</button>`
+        : `<button class="bt-action bt-action--connect" data-action="click->bluetooth#setSink" data-sink="${s.name}">Select</button>`
+
+      return `
+        <div class="bt-device ${activeClass}">
+          <div class="bt-device-info">
+            <strong>${s.description}</strong>
+            <span class="bt-device-status">${statusLabel}</span>
+          </div>
+          <div class="bt-device-actions">
+            ${actionBtn}
+          </div>
+        </div>`
+    }).join("")
+  }
+
+  // ── Bluetooth Devices ──
 
   async loadDevices() {
     this.listTarget.innerHTML = '<p class="loading">Loading paired devices...</p>'
@@ -50,6 +102,7 @@ export default class extends Controller {
     if (result.success) {
       btn.textContent = "Connected"
       this.loadDevices()
+      this.loadSinks()
     } else {
       btn.textContent = "Failed"
       setTimeout(() => { btn.textContent = "Connect"; btn.disabled = false }, 2000)
@@ -64,6 +117,7 @@ export default class extends Controller {
 
     await this.postJSON("/bluetooth/disconnect", { mac })
     this.loadDevices()
+    this.loadSinks()
   }
 
   async removeDevice(event) {
@@ -74,6 +128,7 @@ export default class extends Controller {
 
     await this.postJSON("/bluetooth/remove", { mac })
     this.loadDevices()
+    this.loadSinks()
   }
 
   renderDevices(devices) {

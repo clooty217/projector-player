@@ -1,7 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["panel", "title", "statusText", "playBtn", "pauseBtn"]
+  static targets = ["panel", "title", "statusText", "playBtn", "pauseBtn", "volumeLevel"]
   static outlets = ["search"]
 
   connect() {
@@ -14,6 +14,7 @@ export default class extends Controller {
     this.paused = false
     this.syncButtons()
     this.panelTarget.classList.add("visible")
+    this.fetchVolume()
   }
 
   hide() {
@@ -46,11 +47,13 @@ export default class extends Controller {
   }
 
   async volumeUp() {
-    await this.postJSON("/player/volume_up")
+    const res = await this.postJSON("/player/volume_up")
+    this.updateVolumeDisplay(res.volume)
   }
 
   async volumeDown() {
-    await this.postJSON("/player/volume_down")
+    const res = await this.postJSON("/player/volume_down")
+    this.updateVolumeDisplay(res.volume)
   }
 
   async seekForward() {
@@ -82,6 +85,22 @@ export default class extends Controller {
   syncButtons() {
     this.playBtnTarget.classList.toggle("hidden", !this.paused)
     this.pauseBtnTarget.classList.toggle("hidden", this.paused)
+  }
+
+  async fetchVolume() {
+    try {
+      const resp = await fetch("/player/volume")
+      const data = await resp.json()
+      this.updateVolumeDisplay(data.volume)
+    } catch {
+      this.volumeLevelTarget.textContent = ""
+    }
+  }
+
+  updateVolumeDisplay(volume) {
+    if (volume == null) return
+    const pct = Math.round(volume * 100)
+    this.volumeLevelTarget.textContent = `Volume: ${pct}%`
   }
 
   async postJSON(url) {

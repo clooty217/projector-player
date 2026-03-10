@@ -70,6 +70,8 @@
         </button>
       </div>
 
+      <span data-remote-target="volumeLevel" class="remote-volume-level"></span>
+
       <div class="remote-seek">
         <button data-action="click->remote#seekBackward" class="remote-btn" title="Rewind 10s">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
@@ -106,16 +108,20 @@
     </div>
   </div>
 
-  <!-- ── Bluetooth Modal ── -->
+  <!-- ── Sound & Bluetooth Modal ── -->
   <div data-bluetooth-target="modal"
        data-action="click->bluetooth#closeOnBackdrop"
        class="modal-backdrop">
     <div class="modal">
       <div class="modal-header">
-        <h2>Bluetooth Speakers</h2>
+        <h2>Sound &amp; Bluetooth</h2>
         <button data-action="click->bluetooth#close" class="modal-close">&times;</button>
       </div>
       <div class="modal-body">
+        <h3 class="modal-section-heading">Audio Output</h3>
+        <div data-bluetooth-target="sinkList" class="bt-list"></div>
+
+        <h3 class="modal-section-heading">Bluetooth Devices</h3>
         <div class="bt-toolbar">
           <button data-action="click->bluetooth#scan"
                   data-bluetooth-target="scanBtn"

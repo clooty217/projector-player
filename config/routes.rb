@@ -22,6 +22,13 @@ Rails.application.routes.draw do
   post "player/exit",        to: "player#exit_player",  as: :exit_player
   get  "player/status",      to: "player#status",       as: :player_status
 
+  scope :audio do
+    get  "sinks",    to: "audio#sinks"
+    post "set_sink", to: "audio#set_sink", as: :audio_set_sink
+  end
+
+  get  "player/volume",  to: "player#volume", as: :player_volume
+
   scope :bluetooth do
     get  "devices",    to: "bluetooth#devices"
     post "scan",       to: "bluetooth#scan"

@@ -18,7 +18,7 @@ class PlayerController < ApplicationController
     # TODO: Replace with your system call to open the video in Chromium.
     # Make sure to include --remote-debugging-port so pause/volume/exit work:
     #   pid = spawn("chromium-browser", "--remote-debugging-port=#{CDP_PORT}", "--app=#{url}")
-    pid = spawn("chromium-browser", "--disable-gpu", "--remote-debugging-port=9222", "--start-fullscreen", "--autoplay-policy=no-user-gesture-required", "--password-store=basic","--disable-features=LockProfileCookieDatabase", url)
+    pid = spawn("chromium-browser", "--disable-gpu", "--remote-debugging-port=9222", "--start-fullscreen", "--autoplay-policy=no-user-gesture-required", "--password-store=basic", "--disable-features=LockProfileCookieDatabase", url)
     Process.detach(pid)
 
     self.class.current_pid = pid
@@ -46,7 +46,7 @@ class PlayerController < ApplicationController
   def volume_up
     cdp = CdpClient.new(port: CDP_PORT)
     result = cdp.evaluate("(() => { const v = document.querySelector('video'); if(v) { v.volume = Math.min(1, v.volume + 0.1); return v.volume; } })()")
-    render json: { status: "ok", result: result }
+    render json: { status: "ok", volume: result.dig("result", "result", "value") }
   rescue CdpClient::Error => e
     render json: { status: "error", message: e.message }, status: :service_unavailable
   end
@@ -54,7 +54,15 @@ class PlayerController < ApplicationController
   def volume_down
     cdp = CdpClient.new(port: CDP_PORT)
     result = cdp.evaluate("(() => { const v = document.querySelector('video'); if(v) { v.volume = Math.max(0, v.volume - 0.1); return v.volume; } })()")
-    render json: { status: "ok", result: result }
+    render json: { status: "ok", volume: result.dig("result", "result", "value") }
+  rescue CdpClient::Error => e
+    render json: { status: "error", message: e.message }, status: :service_unavailable
+  end
+
+  def volume
+    cdp = CdpClient.new(port: CDP_PORT)
+    result = cdp.evaluate("(() => { const v = document.querySelector('video'); if(v) return v.volume; })()")
+    render json: { status: "ok", volume: result.dig("result", "result", "value") }
   rescue CdpClient::Error => e
     render json: { status: "error", message: e.message }, status: :service_unavailable
   end
