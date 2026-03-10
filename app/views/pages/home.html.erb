@@ -70,7 +70,10 @@
         </button>
       </div>
 
-      <span data-remote-target="volumeLevel" class="remote-volume-level"></span>
+      <div class="remote-info-row">
+        <span data-remote-target="volumeLevel" class="remote-volume-level"></span>
+        <span data-remote-target="qualityBadge" class="remote-quality-badge"></span>
+      </div>
 
       <div class="remote-seek">
         <button data-action="click->remote#seekBackward" class="remote-btn" title="Rewind 10s">
@@ -102,9 +105,14 @@
         </button>
       </div>
 
-      <button data-action="click->remote#exit" class="remote-exit">
-        Exit &amp; Return to Browse
-      </button>
+      <div class="remote-bottom-row">
+        <button data-action="click->remote#forceHD" class="remote-exit" title="Force highest video quality">
+          Force HD
+        </button>
+        <button data-action="click->remote#exit" class="remote-exit">
+          Exit &amp; Return to Browse
+        </button>
+      </div>
     </div>
   </div>
 

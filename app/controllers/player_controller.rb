@@ -67,6 +67,50 @@ class PlayerController < ApplicationController
     render json: { status: "error", message: e.message }, status: :service_unavailable
   end
 
+  def force_hd
+    cdp = CdpClient.new(port: CDP_PORT)
+    js = <<~JS.squish
+      (() => {
+        function findHls() {
+          if (typeof Hls === 'undefined') return null;
+          if (window.hls && window.hls.levels) return window.hls;
+          if (window.player && window.player.hls && window.player.hls.levels) return window.player.hls;
+          const video = document.querySelector('video');
+          if (video) {
+            const keys = Object.getOwnPropertyNames(video);
+            for (let i = 0; i < keys.length; i++) {
+              try {
+                const obj = video[keys[i]];
+                if (obj && obj.levels && typeof obj.currentLevel === 'number') return obj;
+              } catch(e) {}
+            }
+          }
+          const wkeys = Object.keys(window);
+          for (let i = 0; i < wkeys.length; i++) {
+            try {
+              const obj = window[wkeys[i]];
+              if (obj && obj.levels && typeof obj.currentLevel === 'number' && typeof obj.loadLevel === 'number') return obj;
+            } catch(e) {}
+          }
+          return null;
+        }
+        const hls = findHls();
+        if (hls && hls.levels && hls.levels.length > 0) {
+          const highest = hls.levels.length - 1;
+          hls.currentLevel = highest;
+          const h = hls.levels[highest].height;
+          return { success: true, quality: h ? h + 'p' : 'max', levels: hls.levels.length };
+        }
+        return { success: false };
+      })()
+    JS
+    result = cdp.evaluate(js)
+    value = result.dig("result", "result", "value") || {}
+    render json: { status: "ok", quality: value }
+  rescue CdpClient::Error => e
+    render json: { status: "error", message: e.message }, status: :service_unavailable
+  end
+
   def seek_forward
     seek(10)
   end

@@ -19,6 +19,7 @@ Rails.application.routes.draw do
   post "player/seek_forward_60",  to: "player#seek_forward_60",  as: :seek_forward_60
   post "player/seek_backward_60", to: "player#seek_backward_60", as: :seek_backward_60
   post "player/restart",          to: "player#restart",           as: :restart
+  post "player/force_hd",        to: "player#force_hd",          as: :force_hd
   post "player/exit",        to: "player#exit_player",  as: :exit_player
   get  "player/status",      to: "player#status",       as: :player_status
 

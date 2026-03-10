@@ -1,7 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["panel", "title", "statusText", "playBtn", "pauseBtn", "volumeLevel"]
+  static targets = ["panel", "title", "statusText", "playBtn", "pauseBtn", "volumeLevel", "qualityBadge"]
   static outlets = ["search"]
 
   connect() {
@@ -15,6 +15,8 @@ export default class extends Controller {
     this.syncButtons()
     this.panelTarget.classList.add("visible")
     this.fetchVolume()
+    this.qualityBadgeTarget.textContent = ""
+    this.scheduleForceHD()
   }
 
   hide() {
@@ -74,6 +76,32 @@ export default class extends Controller {
 
   async restart() {
     await this.postJSON("/player/restart")
+  }
+
+  async forceHD() {
+    const res = await this.postJSON("/player/force_hd")
+    if (res.quality && res.quality.success) {
+      this.qualityBadgeTarget.textContent = res.quality.quality || "HD"
+    } else {
+      this.qualityBadgeTarget.textContent = ""
+    }
+  }
+
+  scheduleForceHD(attempt = 0) {
+    const maxAttempts = 5
+    const delay = attempt === 0 ? 5000 : 3000
+    setTimeout(async () => {
+      try {
+        const res = await this.postJSON("/player/force_hd")
+        if (res.quality && res.quality.success) {
+          this.qualityBadgeTarget.textContent = res.quality.quality || "HD"
+        } else if (attempt < maxAttempts) {
+          this.scheduleForceHD(attempt + 1)
+        }
+      } catch {
+        if (attempt < maxAttempts) this.scheduleForceHD(attempt + 1)
+      }
+    }, delay)
   }
 
   async exit() {

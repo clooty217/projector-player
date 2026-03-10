@@ -642,14 +642,38 @@ main {
   margin-top: 0;
 }
 
-/* ── Volume Level ── */
+/* ── Remote Info Row ── */
 
-.remote-volume-level {
-  display: block;
-  font-size: 0.8rem;
-  color: var(--text-muted);
+.remote-info-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
   margin-bottom: 1.25rem;
   min-height: 1.2em;
+}
+
+.remote-volume-level {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.remote-quality-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #22c55e;
+  letter-spacing: 0.04em;
+}
+
+.remote-quality-badge:empty {
+  display: none;
+}
+
+.remote-bottom-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
 }
 
 /* ── Bluetooth ── */
