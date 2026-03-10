@@ -41,17 +41,16 @@ body {
   top: 0;
   z-index: 100;
   background: linear-gradient(to bottom, var(--bg) 60%, transparent);
-  padding: 1.5rem 3.5rem 1rem 2rem;
+  padding: 1.5rem 1rem 1rem 2rem;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 1rem 2rem;
 }
 
-.site-header .header-icon-btn {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
+.site-header .header-actions {
+  margin-left: auto;
+  flex-shrink: 0;
 }
 
 .logo {
