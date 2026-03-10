@@ -1,41 +1,103 @@
-<div data-controller="search tv-detail">
-  <header class="site-header">
-    <h1 class="logo">Projector Player</h1>
-    <div class="search-bar">
-      <input type="text"
-             data-search-target="input"
-             data-action="input->search#search"
-             placeholder="Search movies & TV shows..."
-             autofocus>
-      <div class="type-toggle">
-        <button data-search-target="typeToggle"
-                data-action="click->search#setType"
-                data-type="movie"
-                class="active">Movies</button>
-        <button data-search-target="typeToggle"
-                data-action="click->search#setType"
-                data-type="tv">TV Shows</button>
+<div data-controller="search tv-detail remote bluetooth"
+     data-search-remote-outlet="[data-controller~=remote]"
+     data-tv-detail-remote-outlet="[data-controller~=remote]"
+     data-tv-detail-search-outlet="[data-controller~=search]"
+     data-remote-search-outlet="[data-controller~=search]">
+
+  <!-- ── Browse View ── -->
+  <div data-search-target="browse">
+    <header class="site-header">
+      <h1 class="logo">Projector Player</h1>
+      <div class="search-bar">
+        <input type="text"
+               data-search-target="input"
+               data-action="input->search#search"
+               placeholder="Search movies & TV shows..."
+               autofocus>
+        <div class="type-toggle">
+          <button data-search-target="typeToggle"
+                  data-action="click->search#setType"
+                  data-type="movie"
+                  class="active">Movies</button>
+          <button data-search-target="typeToggle"
+                  data-action="click->search#setType"
+                  data-type="tv">TV Shows</button>
+        </div>
+      </div>
+      <button data-action="click->bluetooth#open" class="header-icon-btn" title="Bluetooth Speakers">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6.5 6.5 17.5 17.5 12 23 12 1 17.5 6.5 6.5 17.5"/></svg>
+      </button>
+    </header>
+
+    <main>
+      <h2 data-search-target="heading" class="section-heading">Trending Movies</h2>
+
+      <div data-search-target="grid" class="card-grid"></div>
+
+      <div class="pagination">
+        <button data-search-target="prevBtn"
+                data-action="click->search#prevPage"
+                disabled>&larr; Previous</button>
+        <span data-search-target="pageInfo">Page 1 of 1</span>
+        <button data-search-target="nextBtn"
+                data-action="click->search#nextPage"
+                disabled>Next &rarr;</button>
+      </div>
+    </main>
+  </div>
+
+  <!-- ── Remote Control Panel ── -->
+  <div data-remote-target="panel" class="remote-panel">
+    <div class="remote-inner">
+      <p data-remote-target="statusText" class="remote-status">Now Playing</p>
+      <h2 data-remote-target="title" class="remote-title">Title</h2>
+
+      <div class="remote-controls">
+        <button data-action="click->remote#volumeDown" class="remote-btn" title="Volume Down">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/></svg>
+        </button>
+
+        <button data-action="click->remote#pause" data-remote-target="pauseBtn" class="remote-btn remote-btn--primary" title="Pause">
+          <svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+        </button>
+
+        <button data-action="click->remote#resume" data-remote-target="playBtn" class="remote-btn remote-btn--primary hidden" title="Play">
+          <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        </button>
+
+        <button data-action="click->remote#volumeUp" class="remote-btn" title="Volume Up">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+        </button>
+      </div>
+
+      <button data-action="click->remote#exit" class="remote-exit">
+        Exit &amp; Return to Browse
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Bluetooth Modal ── -->
+  <div data-bluetooth-target="modal"
+       data-action="click->bluetooth#closeOnBackdrop"
+       class="modal-backdrop">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Bluetooth Speakers</h2>
+        <button data-action="click->bluetooth#close" class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="bt-toolbar">
+          <button data-action="click->bluetooth#scan"
+                  data-bluetooth-target="scanBtn"
+                  class="bt-scan-btn">Scan for Devices</button>
+          <span data-bluetooth-target="scanStatus" class="bt-scan-status"></span>
+        </div>
+        <div data-bluetooth-target="list" class="bt-list"></div>
       </div>
     </div>
-  </header>
+  </div>
 
-  <main>
-    <h2 data-search-target="heading" class="section-heading">Trending Movies</h2>
-
-    <div data-search-target="grid" class="card-grid"></div>
-
-    <div class="pagination">
-      <button data-search-target="prevBtn"
-              data-action="click->search#prevPage"
-              disabled>&larr; Previous</button>
-      <span data-search-target="pageInfo">Page 1 of 1</span>
-      <button data-search-target="nextBtn"
-              data-action="click->search#nextPage"
-              disabled>Next &rarr;</button>
-    </div>
-  </main>
-
-  <!-- TV Season/Episode Modal -->
+  <!-- ── TV Season/Episode Modal ── -->
   <div data-tv-detail-target="modal"
        data-action="click->tv-detail#closeOnBackdrop"
        class="modal-backdrop">

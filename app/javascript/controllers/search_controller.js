@@ -1,7 +1,8 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["input", "grid", "pageInfo", "prevBtn", "nextBtn", "typeToggle", "heading"]
+  static targets = ["input", "grid", "pageInfo", "prevBtn", "nextBtn", "typeToggle", "heading", "browse"]
+  static outlets = ["remote"]
 
   connect() {
     this.page = 1
@@ -128,7 +129,7 @@ export default class extends Controller {
 
     return `
       <div class="card" data-action="click->search#playMovie"
-           data-tmdb-id="${item.id}">
+           data-tmdb-id="${item.id}" data-title="${this.escapeAttr(title)}">
         <div class="card-poster">${posterImg}</div>
         <div class="card-info">
           <h3>${title}</h3>
@@ -143,15 +144,25 @@ export default class extends Controller {
   async playMovie(event) {
     const card = event.currentTarget
     const tmdbId = card.dataset.tmdbId
+    const title = card.dataset.title
     card.classList.add("playing")
 
-    await fetch("/player/play", {
+    const res = await fetch("/player/play", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ tmdb_id: tmdbId, media_type: "movie" })
-    })
+      body: JSON.stringify({ tmdb_id: tmdbId, media_type: "movie", title: title })
+    }).then(r => r.json())
 
-    setTimeout(() => card.classList.remove("playing"), 2000)
+    if (res.status === "playing") {
+      this.browseTarget.classList.add("hidden")
+      this.remoteOutlet.show(title)
+    }
+
+    card.classList.remove("playing")
+  }
+
+  showBrowse() {
+    this.browseTarget.classList.remove("hidden")
   }
 
   updatePagination() {

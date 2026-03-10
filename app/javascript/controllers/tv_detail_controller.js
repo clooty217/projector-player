@@ -2,18 +2,20 @@ import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
   static targets = ["modal", "title", "seasonSelect", "episodeList"]
+  static outlets = ["remote", "search"]
 
   connect() {
     this.currentTvId = null
     this.currentSeason = null
+    this.currentName = null
   }
 
   async open(event) {
     const card = event.currentTarget
     this.currentTvId = card.dataset.tvId
-    const name = card.dataset.tvName
+    this.currentName = card.dataset.tvName
 
-    this.titleTarget.textContent = name
+    this.titleTarget.textContent = this.currentName
     this.episodeListTarget.innerHTML = ""
     this.seasonSelectTarget.innerHTML = '<option value="">Loading...</option>'
     this.modalTarget.classList.add("visible")
@@ -53,12 +55,13 @@ export default class extends Controller {
         ? `<img src="https://image.tmdb.org/t/p/w300${ep.still_path}" alt="Episode ${ep.episode_number}" loading="lazy">`
         : ""
       const rating = ep.vote_average ? ep.vote_average.toFixed(1) : ""
+      const epTitle = ep.name || ("Episode " + ep.episode_number)
       return `
         <div class="episode-card" data-action="click->tv-detail#playEpisode"
-             data-episode="${ep.episode_number}">
+             data-episode="${ep.episode_number}" data-ep-title="${epTitle.replace(/"/g, '&quot;')}">
           <div class="episode-still">${still}</div>
           <div class="episode-info">
-            <strong>E${ep.episode_number}: ${ep.name || "Episode " + ep.episode_number}</strong>
+            <strong>E${ep.episode_number}: ${epTitle}</strong>
             ${rating ? `<span class="rating">&#9733; ${rating}</span>` : ""}
             ${ep.overview ? `<p>${ep.overview}</p>` : ""}
           </div>
@@ -69,20 +72,30 @@ export default class extends Controller {
   async playEpisode(event) {
     const card = event.currentTarget
     const episode = card.dataset.episode
+    const epTitle = card.dataset.epTitle
     card.classList.add("playing")
 
-    await fetch("/player/play", {
+    const displayTitle = `${this.currentName} — S${this.currentSeason}E${episode}: ${epTitle}`
+
+    const res = await fetch("/player/play", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         tmdb_id: this.currentTvId,
         media_type: "tv",
         season: this.currentSeason,
-        episode: episode
+        episode: episode,
+        title: displayTitle
       })
-    })
+    }).then(r => r.json())
 
-    setTimeout(() => card.classList.remove("playing"), 2000)
+    if (res.status === "playing") {
+      this.close()
+      this.searchOutlet.browseTarget.classList.add("hidden")
+      this.remoteOutlet.show(displayTitle)
+    }
+
+    card.classList.remove("playing")
   }
 
   close() {
