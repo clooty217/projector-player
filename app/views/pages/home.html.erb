@@ -1,2 +1,59 @@
-<h1>Pages#home</h1>
-<p>Find me in app/views/pages/home.html.erb</p>
+<div data-controller="search tv-detail">
+  <header class="site-header">
+    <h1 class="logo">Projector Player</h1>
+    <div class="search-bar">
+      <input type="text"
+             data-search-target="input"
+             data-action="input->search#search"
+             placeholder="Search movies & TV shows..."
+             autofocus>
+      <div class="type-toggle">
+        <button data-search-target="typeToggle"
+                data-action="click->search#setType"
+                data-type="movie"
+                class="active">Movies</button>
+        <button data-search-target="typeToggle"
+                data-action="click->search#setType"
+                data-type="tv">TV Shows</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <h2 data-search-target="heading" class="section-heading">Trending Movies</h2>
+
+    <div data-search-target="grid" class="card-grid"></div>
+
+    <div class="pagination">
+      <button data-search-target="prevBtn"
+              data-action="click->search#prevPage"
+              disabled>&larr; Previous</button>
+      <span data-search-target="pageInfo">Page 1 of 1</span>
+      <button data-search-target="nextBtn"
+              data-action="click->search#nextPage"
+              disabled>Next &rarr;</button>
+    </div>
+  </main>
+
+  <!-- TV Season/Episode Modal -->
+  <div data-tv-detail-target="modal"
+       data-action="click->tv-detail#closeOnBackdrop"
+       class="modal-backdrop">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 data-tv-detail-target="title">Show Title</h2>
+        <button data-action="click->tv-detail#close" class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="season-picker">
+          <label for="season-select">Season</label>
+          <select id="season-select"
+                  data-tv-detail-target="seasonSelect"
+                  data-action="change->tv-detail#loadSeason">
+          </select>
+        </div>
+        <div data-tv-detail-target="episodeList" class="episode-list"></div>
+      </div>
+    </div>
+  </div>
+</div>

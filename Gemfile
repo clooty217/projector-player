@@ -30,6 +30,7 @@ gem "solid_cable"
 
 # Reduces boot times through caching; required in config/boot.rb
 gem "bootsnap", require: false
+gem "dotenv-rails"
 
 # Deploy this application anywhere as a Docker container [https://kamal-deploy.org]
 gem "kamal", require: false
@@ -57,10 +58,7 @@ end
 group :development do
   # Use console on exceptions pages [https://github.com/rails/web-console]
   gem "web-console"
-  gem "ruby-lsp", require: false
-  gem "ruby-lsp-rails", require: false
-  gem "rubocop", require: false
-
+  gem "tapioca", ">= 0.17.0", require: false
 end
 
 group :test do
