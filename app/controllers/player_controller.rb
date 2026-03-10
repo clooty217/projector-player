@@ -18,7 +18,7 @@ class PlayerController < ApplicationController
     # TODO: Replace with your system call to open the video in Chromium.
     # Make sure to include --remote-debugging-port so pause/volume/exit work:
     #   pid = spawn("chromium-browser", "--remote-debugging-port=#{CDP_PORT}", "--app=#{url}")
-    pid = spawn("chromium-browser", "--remote-debugging-port=9222", "--start-fullscreen", "--autoplay-policy=no-user-gesture-required", url)
+    pid = spawn("chromium-browser", "--remote-debugging-port=9222", "--start-fullscreen", "--autoplay-policy=no-user-gesture-required", "--password-store=basic","--disable-features=LockProfileCookieDatabase", url)
     Process.detach(pid)
 
     self.class.current_pid = pid
