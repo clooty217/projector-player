@@ -14,10 +14,7 @@ class PlayerController < ApplicationController
 
     url = build_vidking_url(tmdb_id, media_type, season, episode)
 
-    # TODO: Replace with your system call to open the video in Chromium.
-    # Make sure to include --remote-debugging-port so pause can work:
-    #   system("chromium-browser", "--remote-debugging-port=#{CDP_PORT}", "--app=#{url}")
-    system("")
+    system("chromium --start-fullscreen --autoplay-policy=no-user-gesture-required #{url}")
 
     render json: { status: "playing", url: url }
   end
