@@ -1,4 +1,4 @@
-# typed: false
+# typed: true
 
 class SystemController < ApplicationController
   skip_before_action :verify_authenticity_token

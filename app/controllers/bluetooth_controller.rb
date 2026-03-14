@@ -1,4 +1,4 @@
-# typed: false
+# typed: true
 
 class BluetoothController < ApplicationController
   skip_before_action :verify_authenticity_token

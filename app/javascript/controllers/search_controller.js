@@ -11,6 +11,17 @@ export default class extends Controller {
     this.mediaType = "movie"
     this.debounceTimer = null
     this.loadTrending()
+    this.checkActiveSession()
+  }
+
+  async checkActiveSession() {
+    try {
+      const res = await fetch("/player/status").then(r => r.json())
+      if (res.playing) {
+        this.browseTarget.classList.add("hidden")
+        this.remoteOutlet.show(res.title || "Unknown")
+      }
+    } catch {}
   }
 
   setType(event) {
