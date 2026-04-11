@@ -15,7 +15,10 @@ class PlayerController < ApplicationController
 
     url = build_vidking_url(tmdb_id, media_type, season, episode)
 
-    # TODO: Replace with your system call to open the video in Chromium.
+    # Mark Chromium's last session as cleanly exited so it never shows the
+    # "restore pages?" prompt after a SIGTERM / unexpected shutdown.
+    mark_chromium_exit_clean
+
     # Make sure to include --remote-debugging-port so pause/volume/exit work:
     #   pid = spawn("chromium-browser", "--remote-debugging-port=#{CDP_PORT}", "--app=#{url}")
     pid = spawn("chromium-browser",
@@ -24,8 +27,10 @@ class PlayerController < ApplicationController
                 "--start-fullscreen",
                 "--autoplay-policy=no-user-gesture-required",
                 "--password-store=basic",
-                "--disable-features=LockProfileCookieDatabase",
+                "--disable-features=LockProfileCookieDatabase,InfiniteSessionRestore",
                 "--disable-session-crashed-bubble",
+                "--noerrdialogs",
+                "--disable-infobars",
                 url)
     Process.detach(pid)
 
@@ -178,6 +183,19 @@ class PlayerController < ApplicationController
     render json: { status: "ok", result: result }
   rescue CdpClient::Error => e
     render json: { status: "error", message: e.message }, status: :service_unavailable
+  end
+
+  def mark_chromium_exit_clean
+    prefs_path = File.expand_path("~/.config/chromium/Default/Preferences")
+    return unless File.exist?(prefs_path)
+
+    prefs = JSON.parse(File.read(prefs_path))
+    prefs["profile"] ||= {}
+    prefs["profile"]["exit_type"] = "Normal"
+    prefs["profile"]["exited_cleanly"] = true
+    File.write(prefs_path, JSON.generate(prefs))
+  rescue StandardError => e
+    Rails.logger.warn("Could not reset Chromium exit state: #{e.message}")
   end
 
   def build_vidking_url(tmdb_id, media_type, season, episode)
