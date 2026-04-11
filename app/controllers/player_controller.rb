@@ -124,6 +124,149 @@ class PlayerController < ApplicationController
     render json: { status: "error", message: e.message }, status: :service_unavailable
   end
 
+  def inject_error_recovery
+    cdp = CdpClient.new(port: CDP_PORT)
+    js = <<~JS.squish
+      (() => {
+        if (window.__errorRecoveryInstalled) return { success: true, alreadyInstalled: true };
+        window.__errorRecoveryInstalled = true;
+
+        function findHls() {
+          if (typeof Hls === 'undefined') return null;
+          if (window.hls && window.hls.levels) return window.hls;
+          if (window.player && window.player.hls && window.player.hls.levels) return window.player.hls;
+          const video = document.querySelector('video');
+          if (video) {
+            const keys = Object.getOwnPropertyNames(video);
+            for (let i = 0; i < keys.length; i++) {
+              try {
+                const obj = video[keys[i]];
+                if (obj && obj.levels && typeof obj.currentLevel === 'number') return obj;
+              } catch(e) {}
+            }
+          }
+          const wkeys = Object.keys(window);
+          for (let i = 0; i < wkeys.length; i++) {
+            try {
+              const obj = window[wkeys[i]];
+              if (obj && obj.levels && typeof obj.currentLevel === 'number' && typeof obj.loadLevel === 'number') return obj;
+            } catch(e) {}
+          }
+          return null;
+        }
+
+        const hls = findHls();
+        const video = document.querySelector('video');
+        if (!video) return { success: false, reason: 'no video element' };
+
+        window.__recoveryState = {
+          recoveryCount: 0,
+          lastRecoveryTime: 0,
+          skipEvents: [],
+          cooldownMs: 5000,
+          gaveUp: false,
+          lastCurrentTime: video.currentTime,
+          stallCount: 0,
+          resetTimer: null
+        };
+        const state = window.__recoveryState;
+
+        function attemptRecovery(errorType) {
+          const now = Date.now();
+          if (now - state.lastRecoveryTime < state.cooldownMs) return;
+          state.lastRecoveryTime = now;
+          state.recoveryCount++;
+          clearTimeout(state.resetTimer);
+
+          if (state.recoveryCount <= 2) {
+            if (hls) {
+              if (errorType === 'network') { hls.startLoad(); }
+              else { hls.recoverMediaError(); }
+            } else {
+              video.currentTime += 5;
+              state.skipEvents.push({ time: now, position: video.currentTime, skip: 5 });
+            }
+          } else if (state.recoveryCount === 3) {
+            if (hls) {
+              hls.swapAudioCodec();
+              hls.recoverMediaError();
+            } else {
+              video.currentTime += 10;
+              state.skipEvents.push({ time: now, position: video.currentTime, skip: 10 });
+            }
+          } else if (state.recoveryCount === 4) {
+            video.currentTime += 10;
+            state.skipEvents.push({ time: now, position: video.currentTime, skip: 10 });
+          } else if (state.recoveryCount <= 6) {
+            video.currentTime += 30;
+            state.skipEvents.push({ time: now, position: video.currentTime, skip: 30 });
+          } else {
+            state.gaveUp = true;
+            return;
+          }
+
+          if (state.skipEvents.length > 10) state.skipEvents = state.skipEvents.slice(-10);
+          state.resetTimer = setTimeout(() => { state.recoveryCount = 0; state.gaveUp = false; }, 30000);
+        }
+
+        if (hls && typeof Hls !== 'undefined' && Hls.Events && Hls.Events.ERROR) {
+          hls.on(Hls.Events.ERROR, function(event, data) {
+            if (!data.fatal) return;
+            const errorType = (data.type === Hls.ErrorTypes.NETWORK_ERROR) ? 'network' : 'media';
+            attemptRecovery(errorType);
+          });
+        }
+
+        let waitingTimer = null;
+        let stalledTimer = null;
+
+        video.addEventListener('error', () => attemptRecovery('media'));
+
+        video.addEventListener('stalled', () => {
+          clearTimeout(stalledTimer);
+          stalledTimer = setTimeout(() => {
+            if (!video.paused && !video.ended && video.readyState < 3) {
+              attemptRecovery('network');
+            }
+          }, 15000);
+        });
+
+        video.addEventListener('waiting', () => {
+          clearTimeout(waitingTimer);
+          waitingTimer = setTimeout(() => {
+            if (!video.paused && !video.ended) {
+              attemptRecovery('network');
+            }
+          }, 30000);
+        });
+
+        video.addEventListener('playing', () => {
+          clearTimeout(waitingTimer);
+          clearTimeout(stalledTimer);
+          state.stallCount = 0;
+        });
+
+        setInterval(() => {
+          if (video.paused || video.ended) { state.stallCount = 0; return; }
+          if (Math.abs(video.currentTime - state.lastCurrentTime) < 0.5) {
+            state.stallCount++;
+            if (state.stallCount >= 3) { state.stallCount = 0; attemptRecovery('network'); }
+          } else {
+            state.stallCount = 0;
+          }
+          state.lastCurrentTime = video.currentTime;
+        }, 5000);
+
+        return { success: true, installed: true, hasHls: !!hls };
+      })()
+    JS
+    result = cdp.evaluate(js)
+    value = result.dig("result", "result", "value") || {}
+    render json: { status: "ok", recovery: value }
+  rescue CdpClient::Error => e
+    render json: { status: "error", message: e.message }, status: :service_unavailable
+  end
+
   def seek_forward
     seek(10)
   end

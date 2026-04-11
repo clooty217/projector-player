@@ -1,7 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["panel", "title", "statusText", "playBtn", "pauseBtn", "volumeLevel", "qualityBadge"]
+  static targets = ["panel", "title", "statusText", "playBtn", "pauseBtn", "volumeLevel", "qualityBadge", "recoveryBadge"]
   static outlets = ["search"]
 
   connect() {
@@ -16,7 +16,9 @@ export default class extends Controller {
     this.panelTarget.classList.add("visible")
     this.fetchVolume()
     this.qualityBadgeTarget.textContent = ""
+    this.recoveryBadgeTarget.textContent = ""
     this.scheduleForceHD()
+    this.scheduleErrorRecovery()
   }
 
   hide() {
@@ -100,6 +102,23 @@ export default class extends Controller {
         }
       } catch {
         if (attempt < maxAttempts) this.scheduleForceHD(attempt + 1)
+      }
+    }, delay)
+  }
+
+  scheduleErrorRecovery(attempt = 0) {
+    const maxAttempts = 5
+    const delay = attempt === 0 ? 8000 : 4000
+    setTimeout(async () => {
+      try {
+        const res = await this.postJSON("/player/inject_error_recovery")
+        if (res.recovery && res.recovery.success) {
+          this.recoveryBadgeTarget.textContent = "ERR-REC"
+        } else if (attempt < maxAttempts) {
+          this.scheduleErrorRecovery(attempt + 1)
+        }
+      } catch {
+        if (attempt < maxAttempts) this.scheduleErrorRecovery(attempt + 1)
       }
     }, delay)
   }
